@@ -1,270 +1,301 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Para ti | Correspondencia Especial</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Correspondencia Especial</title>
+    
+    <!-- Favicon personalizado SVG -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✧</text></svg>">
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Tone.js para la música generativa -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    
+    <!-- Fuentes de Google -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <!-- Fuentes: Playfair para títulos, Lora para lectura, Great Vibes para la firma -->
-    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Lora:ital,wght@0,400;0,500;1,400;1,500&family=Playfair+Display:ital,wght@0,500;0,700;1,500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Great+Vibes&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
     
     <style>
-        :root {
-            --bg-dark: #12100e;
-            --paper: #f9f5f0;
-            --ink: #2c241b;
-            --gold: #d4af37;
-            --gold-light: #f3e5ab;
-            --env-back: #b58c5c;
-            --env-flap: #c69f70;
-            --env-front: #d6b283;
-            --wax: #8b0000;
+        /* Sistema de Temas (Claro y Oscuro) */
+        :root[data-theme="dark"] {
+            --bg-color: #0a0807;
+            --paper-bg: #14110f;
+            --paper-border: #d4af37;
+            --text-main: #f0e6d2;
+            --text-accent: #d4af37;
+            --text-dim: #8c7e6c;
+            --particle-color: rgba(212, 175, 55, 0.6);
+            --env-back: #4a3320;
+            --env-front: #5c4028;
+            --env-flap: #503723;
+            --wax-color: #700000;
         }
 
+        :root[data-theme="light"] {
+            --bg-color: #f5f0e6;
+            --paper-bg: #ffffff;
+            --paper-border: #b89130;
+            --text-main: #2b2218;
+            --text-accent: #b89130;
+            --text-dim: #7a6855;
+            --particle-color: rgba(184, 145, 48, 0.4);
+            --env-back: #c29d78;
+            --env-front: #d1b190;
+            --env-flap: #c9a785;
+            --wax-color: #a82020;
+        }
+
+        /* Utilidades Generales */
         body {
-            font-family: 'Lora', serif;
-            background-color: var(--bg-dark);
-            color: var(--paper);
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            transition: background-color 0.8s ease, color 0.8s ease;
             overflow-x: hidden;
-            margin: 0;
             min-height: 100vh;
         }
 
-        /* Utilidades de tipografía */
-        .font-title { font-family: 'Playfair Display', serif; }
-        .font-signature { font-family: 'Great Vibes', cursive; }
-        
+        .font-serif { font-family: 'Cormorant Garamond', serif; }
+        .font-script { font-family: 'Great Vibes', cursive; }
+
+        /* Contenedor tipo cristal (Glassmorphism) */
         .glass-box {
-            background: radial-gradient(circle at center, rgba(44, 36, 27, 0.8) 0%, rgba(20, 16, 14, 0.95) 100%);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(212, 175, 55, 0.2);
-            box-shadow: 0 30px 60px rgba(0,0,0,0.8), inset 0 0 40px rgba(212,175,55,0.05);
-            position: relative;
-        }
-        .glass-box::before {
-            content: '';
-            position: absolute;
-            inset: 6px;
-            border: 1px solid rgba(212, 175, 55, 0.1);
-            pointer-events: none;
-            border-radius: inherit;
+            background: rgba(var(--paper-bg), 0.4);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(212, 175, 55, 0.15);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transition: all 0.5s ease;
         }
 
         .envelope-wrapper {
-            perspective: 1200px;
+            perspective: 1500px;
             width: 100%;
-            max-w: 400px;
+            max-width: 320px;
             margin: 0 auto;
             cursor: pointer;
-            filter: drop-shadow(0 20px 30px rgba(0,0,0,0.5));
-            transition: transform 0.3s ease;
+            position: relative;
         }
-        .envelope-wrapper:hover {
-            transform: translateY(-5px);
-        }
+        
         .envelope {
             position: relative;
             width: 100%;
-            height: 240px;
+            height: 200px;
             background: var(--env-back);
             border-radius: 4px;
             transform-style: preserve-3d;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            transition: transform 0.4s ease, background-color 0.8s ease;
         }
-        /* Carta asomándose */
+
+        .envelope-wrapper:hover .envelope {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 30px 50px rgba(0,0,0,0.5);
+        }
+
         .env-letter {
             position: absolute;
-            top: 10px; left: 15px; right: 15px; bottom: 10px;
-            background: var(--paper);
-            box-shadow: 0 0 10px rgba(0,0,0,0.2);
-            border: 1px solid rgba(0,0,0,0.1);
-            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            top: 10px; left: 10px; right: 10px; bottom: 10px;
+            background: var(--paper-bg);
+            border: 1px solid var(--paper-border);
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.8s ease;
             z-index: 2;
-            display: flex;
-            justify-content: center;
-            padding-top: 15px;
         }
-        .env-letter-lines {
-            width: 80%; border-top: 1px solid rgba(212,175,55,0.3);
-            height: 10px; border-bottom: 1px solid rgba(212,175,55,0.3);
+
+        .env-left, .env-right, .env-bottom, .env-top {
+            position: absolute; inset: 0;
+            transition: background-color 0.8s ease;
         }
-        
-        /* Solapas del sobre con Clip Path para formas perfectas */
-        .env-left {
-            position: absolute; inset: 0; background: var(--env-front);
-            clip-path: polygon(0 0, 50% 50%, 0 100%); z-index: 3;
-        }
-        .env-right {
-            position: absolute; inset: 0; background: var(--env-front);
-            clip-path: polygon(100% 0, 50% 50%, 100% 100%); z-index: 3;
-        }
-        .env-bottom {
-            position: absolute; inset: 0; background: #e0be91;
-            clip-path: polygon(0 100%, 50% 50%, 100% 100%); z-index: 4;
-        }
-        .env-top {
-            position: absolute; inset: 0; background: var(--env-flap);
-            clip-path: polygon(0 0, 100% 0, 50% 50%); z-index: 5;
+        .env-left { background: var(--env-front); clip-path: polygon(0 0, 50% 50%, 0 100%); z-index: 3; }
+        .env-right { background: var(--env-front); clip-path: polygon(100% 0, 50% 50%, 100% 100%); z-index: 3; }
+        .env-bottom { background: var(--env-back); clip-path: polygon(0 100%, 50% 50%, 100% 100%); z-index: 4; filter: brightness(1.1); }
+        .env-top { 
+            background: var(--env-flap); 
+            clip-path: polygon(0 0, 100% 0, 50% 50%); 
+            z-index: 5; 
             transform-origin: top;
-            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), z-index 0s 0.3s;
         }
-        
-        /* Sello de Cera */
+
         .wax-seal {
             position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            width: 50px; height: 50px;
-            background: radial-gradient(circle, #a00000, #500000);
+            width: 55px; height: 55px;
+            background: radial-gradient(circle, var(--wax-color), #3a0000);
             border-radius: 50%; z-index: 6;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5), inset 0 0 10px rgba(0,0,0,0.5);
-            border: 2px solid #300000;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4), inset 0 0 5px rgba(255,255,255,0.2);
+            border: 2px solid rgba(0,0,0,0.3);
             display: flex; align-items: center; justify-content: center;
-            color: #d4af37; font-family: 'Great Vibes', cursive; font-size: 24px;
-            transition: opacity 0.4s ease, transform 0.4s ease;
+            color: #e6c875; font-family: 'Great Vibes', cursive; font-size: 28px;
+            transition: all 0.6s ease;
         }
 
-        /* Clases activas para la animación del sobre */
-        .envelope.open .wax-seal { opacity: 0; transform: translate(-50%, -50%) scale(1.5); pointer-events: none; }
-        .envelope.open .env-top { transform: rotateX(180deg); z-index: 1; }
-        .envelope.open .env-letter { transform: translateY(-100px); }
+        .envelope.open .wax-seal { opacity: 0; transform: translate(-50%, -50%) scale(1.8); pointer-events: none; }
+        .envelope.open .env-top { transform: rotateX(180deg); z-index: 1; transition-delay: 0s; }
+        .envelope.open .env-letter { transform: translateY(-120px); z-index: 4; transition-delay: 0.4s; }
 
-        .letter-paper {
-            background-color: var(--paper);
-            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E");
-            color: var(--ink);
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,0,0,0.05);
+        .paper-texture {
+            background-color: var(--paper-bg);
+            /* Ruido sutil para textura */
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+            box-shadow: 0 30px 60px rgba(0,0,0,0.4), 0 0 100px rgba(212, 175, 55, 0.05) inset;
+            transition: background-color 0.8s ease, color 0.8s ease;
+        }
+
+        /* Marcos ornamentales */
+        .ornamental-border {
+            border: 1px solid var(--paper-border);
             position: relative;
-            /* Marco decorativo elegante */
-            border: 8px solid transparent;
-            border-image: linear-gradient(45deg, #d4af37, #f3e5ab, #d4af37) 1;
-        }
-
-        .letter-inner-border {
-            border: 1px solid rgba(212, 175, 55, 0.4);
             padding: 2rem;
-            position: relative;
-            height: 100%;
-        }
-
-        /* Adornos en las esquinas */
-        .corner-ornament {
-            position: absolute; width: 30px; height: 30px;
-            border: 2px solid var(--gold); pointer-events: none;
-        }
-        .corner-tl { top: 5px; left: 5px; border-right: none; border-bottom: none; }
-        .corner-tr { top: 5px; right: 5px; border-left: none; border-bottom: none; }
-        .corner-bl { bottom: 5px; left: 5px; border-right: none; border-top: none; }
-        .corner-br { bottom: 5px; right: 5px; border-left: none; border-top: none; }
-
-        /* Estilos del texto de la carta */
-        .drop-cap::first-letter {
-            font-family: 'Playfair Display', serif;
-            font-size: 4.5rem;
-            float: left;
-            line-height: 0.8;
-            padding-right: 0.5rem;
-            padding-top: 0.2rem;
-            color: var(--gold);
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            margin: 1rem;
         }
         
-        .letter-content p {
-            margin-bottom: 1.5rem;
-            text-align: justify;
-            line-height: 1.8;
-            font-size: 1.05rem;
-        }
-
-        /* Cita poética central */
-        .pull-quote {
-            text-align: center;
-            font-style: italic;
-            font-size: 1.15rem;
-            color: #5a4634;
-            margin: 2.5rem 1rem;
-            padding: 1.5rem;
-            position: relative;
-        }
-        .pull-quote::before, .pull-quote::after {
-            content: '✧';
+        .corner-svg {
             position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            color: var(--gold);
-            font-size: 1.5rem;
+            width: 40px; height: 40px;
+            fill: var(--paper-border);
         }
-        .pull-quote::before { top: -15px; }
-        .pull-quote::after { bottom: -15px; }
+        .tl { top: -5px; left: -5px; }
+        .tr { top: -5px; right: -5px; transform: rotate(90deg); }
+        .bl { bottom: -5px; left: -5px; transform: rotate(-90deg); }
+        .br { bottom: -5px; right: -5px; transform: rotate(180deg); }
 
-        /* Marca de agua del Sol para esta carta */
-        .watermark-sun {
-            position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            width: 300px; height: 300px;
-            background: radial-gradient(circle, rgba(212,175,55,0.15) 0%, transparent 70%);
+        .drop-cap::first-letter {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 4.5rem;
+            float: left;
+            line-height: 0.7;
+            padding-right: 0.4rem;
+            padding-top: 0.4rem;
+            color: var(--text-accent);
+        }
+
+        /* Simulador Math Glow */
+        #math-canvas {
+            background: rgba(0,0,0,0.02);
+            border-radius: 8px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.1);
+            width: 100%;
+            height: auto;
+            max-width: 400px;
+            margin: 0 auto;
+            display: block;
+        }
+        
+        /* Controles de Rango / Slider custom */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px; width: 16px;
             border-radius: 50%;
-            pointer-events: none;
-            z-index: 0;
+            background: var(--text-accent);
+            cursor: pointer;
+            margin-top: -6px;
+            box-shadow: 0 0 10px var(--text-accent);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%; height: 4px;
+            cursor: pointer;
+            background: var(--text-dim);
+            border-radius: 2px;
         }
 
-        /* Partículas ambientales (Luces cálidas) */
+        /* Partículas y Transiciones */
         .particle {
             position: absolute;
             border-radius: 50%;
             pointer-events: none;
-            opacity: 0;
-            animation: floatUp ease-in infinite;
-            box-shadow: 0 0 10px currentColor;
+            background-color: var(--particle-color);
+            box-shadow: 0 0 8px var(--particle-color);
+            animation: floatUp linear infinite;
         }
+
         @keyframes floatUp {
             0% { transform: translateY(100vh) scale(0); opacity: 0; }
-            50% { opacity: 0.8; }
+            20% { opacity: 1; }
+            80% { opacity: 1; }
             100% { transform: translateY(-10vh) scale(1.5); opacity: 0; }
         }
 
-        /* Transiciones suaves */
         .fade-in { animation: fadeIn 1s ease-out forwards; }
         .fade-out { animation: fadeOut 0.5s ease-in forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes fadeOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.95); } }
+
+        /* Utilidad de scroll */
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: var(--text-dim); border-radius: 10px; }
     </style>
 </head>
-<body class="flex items-center justify-center relative">
 
+<body class="relative flex flex-col items-center justify-center">
+
+    <!-- Capa de partículas -->
     <div id="particles-container" class="fixed inset-0 z-0 overflow-hidden pointer-events-none"></div>
 
-    <!-- MAIN APP WRAPPER -->
-    <main class="w-full max-w-4xl px-4 py-8 relative z-10 min-h-screen flex items-center justify-center">
+    <!-- Botón de Tema (Fijo) -->
+    <button onclick="toggleTheme()" class="fixed top-4 right-4 z-50 p-3 rounded-full glass-box hover:bg-opacity-80 transition flex items-center justify-center text-current" title="Cambiar Tema">
+        <svg id="theme-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <!-- Por defecto luna para modo oscuro -->
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+    </button>
+
+    <!-- Indicador y Control de Música -->
+    <button id="music-indicator" onclick="toggleAudio()" class="fixed top-4 left-4 z-50 p-3 rounded-full glass-box hidden text-current text-xs font-medium tracking-wider flex items-center gap-2 hover:bg-opacity-80 transition cursor-pointer" title="Silenciar / Activar Música">
+        <div id="music-bars" class="flex gap-1 items-end h-3">
+            <div class="w-1 bg-current animate-pulse h-full"></div>
+            <div class="w-1 bg-current animate-pulse h-2/3" style="animation-delay: 0.2s"></div>
+            <div class="w-1 bg-current animate-pulse h-full" style="animation-delay: 0.4s"></div>
+        </div>
+        <span id="music-text">Música Activa</span>
+    </button>
+
+    <!-- Contenedor Principal de Vistas -->
+    <main class="w-full max-w-3xl px-4 py-12 relative z-10 min-h-screen flex items-center justify-center">
         
-        <!-- ================= VISTA 1: LOGIN ================= -->
-        <div id="login-view" class="glass-box w-full max-w-md p-10 rounded-2xl text-center fade-in">
-            <div class="w-16 h-16 mx-auto mb-6 border border-amber-500/30 rounded-full flex items-center justify-center bg-amber-500/10">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-amber-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3"/><path d="M4 11v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6"/><path d="M12 11v10"/><path d="M4 7l8 4 8-4"/></svg>
+        <!-- VISTA 1: INGRESO -->
+        <div id="login-view" class="glass-box w-full max-w-md p-10 rounded-3xl text-center fade-in">
+            <div class="mb-8">
+                <svg class="w-12 h-12 mx-auto" style="color: var(--text-accent)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22v-7l-2-2"></path>
+                    <path d="M12 15l2-2"></path>
+                    <path d="M17 8v.5a3.5 3.5 0 1 1-7 0V8a5 5 0 1 1 10 0v.5a3.5 3.5 0 1 1-7 0V8"></path>
+                </svg>
             </div>
             
-            <h1 class="font-title text-3xl mb-3 text-amber-50 tracking-wider">Correspondencia Especial</h1>
-            <p class="text-stone-400 font-light mb-8 text-sm">Introduce tu nombre o clave asignada para recibir tu carta.</p>
+            <h1 class="font-serif text-3xl mb-4 font-semibold tracking-wide">Correspondencia</h1>
+            <p class="text-sm font-light opacity-80 mb-8 tracking-wide">Introduce la clave para revelar el contenido oculto.</p>
             
-            <div class="space-y-5">
-                <input type="text" id="code-input" placeholder="Tu nombre..." 
-                    class="w-full bg-black/40 border-b-2 border-stone-600 px-4 py-3 text-center text-amber-100 placeholder-stone-600 focus:outline-none focus:border-amber-400 transition-colors text-lg tracking-widest font-title">
+            <div class="space-y-6">
+                <input type="password" id="code-input" placeholder="Tu código..." 
+                    class="w-full bg-transparent border-b border-opacity-30 border-current px-4 py-3 text-center focus:outline-none focus:border-opacity-100 transition-colors text-lg tracking-[0.3em] font-serif uppercase">
                 
                 <button onclick="checkCode()" 
-                    class="w-full py-3 mt-4 border border-amber-500/50 text-amber-200 hover:bg-amber-500/10 hover:border-amber-400 transition-all uppercase tracking-widest text-xs font-semibold">
-                    Buscar Carta
+                    class="w-full py-3 mt-2 border border-opacity-30 border-current hover:bg-white hover:bg-opacity-5 transition-all tracking-[0.2em] text-xs font-medium uppercase relative overflow-hidden group">
+                    <span class="relative z-10">Desbloquear</span>
                 </button>
             </div>
-            <p id="error-msg" class="text-sm text-red-400 mt-4 hidden">No hay cartas para ese nombre.</p>
+            <p id="error-msg" class="text-xs text-red-500 mt-6 hidden tracking-wide">Código no reconocido.</p>
         </div>
 
-        <!-- ================= VISTA 2: EL SOBRE 3D ================= -->
+        <!-- VISTA 2: EL SOBRE -->
         <div id="envelope-view" class="hidden w-full max-w-md mx-auto text-center">
-            <h2 class="font-title text-2xl text-amber-100 mb-8 tracking-widest font-light uppercase">Tienes correo</h2>
+            <h2 class="font-serif text-2xl mb-12 tracking-widest font-light uppercase opacity-80">Tienes una entrega</h2>
             
             <div class="envelope-wrapper" onclick="openEnvelope()">
                 <div class="envelope" id="the-envelope">
-                    <div class="env-letter"><div class="env-letter-lines"></div></div>
+                    <div class="env-letter"></div>
                     <div class="env-left"></div>
                     <div class="env-right"></div>
                     <div class="env-bottom"></div>
@@ -273,31 +304,62 @@
                 </div>
             </div>
             
-            <p class="text-stone-400 text-sm mt-12 font-light italic animate-pulse">Presiona el sobre para abrirlo</p>
+            <p class="text-xs mt-16 font-light tracking-widest uppercase opacity-60 animate-pulse">Presiona el sello para abrir</p>
         </div>
 
-        <!-- ================= VISTA 3: LA CARTA ================= -->
-        <div id="letter-view" class="hidden w-full max-w-2xl mx-auto">
-            <div class="letter-paper rounded-sm">
-                <!-- Marco interior y esquinas -->
-                <div class="letter-inner-border">
-                    <div class="corner-ornament corner-tl"></div>
-                    <div class="corner-ornament corner-tr"></div>
-                    <div class="corner-ornament corner-bl"></div>
-                    <div class="corner-ornament corner-br"></div>
-                    
-                    <div id="letter-watermark"></div>
+        <!-- VISTA 3: LA CARTA Y SIMULADOR -->
+        <div id="letter-view" class="hidden w-full mx-auto">
+            <div class="paper-texture rounded-sm relative overflow-hidden">
+                
+                <!-- Borde ornamental SVG -->
+                <div class="ornamental-border">
+                    <!-- SVG Esquinas -->
+                    <svg class="corner-svg tl" viewBox="0 0 100 100"><path d="M0,0 L100,0 L100,10 L10,10 L10,100 L0,100 Z M30,30 L100,30 L100,40 L40,40 L40,100 L30,100 Z"/></svg>
+                    <svg class="corner-svg tr" viewBox="0 0 100 100"><path d="M0,0 L100,0 L100,10 L10,10 L10,100 L0,100 Z M30,30 L100,30 L100,40 L40,40 L40,100 L30,100 Z"/></svg>
+                    <svg class="corner-svg bl" viewBox="0 0 100 100"><path d="M0,0 L100,0 L100,10 L10,10 L10,100 L0,100 Z M30,30 L100,30 L100,40 L40,40 L40,100 L30,100 Z"/></svg>
+                    <svg class="corner-svg br" viewBox="0 0 100 100"><path d="M0,0 L100,0 L100,10 L10,10 L10,100 L0,100 Z M30,30 L100,30 L100,40 L40,40 L40,100 L30,100 Z"/></svg>
 
-                    <!-- Contenido inyectado por JS -->
-                    <div id="letter-body" class="letter-content relative z-10 p-4 sm:p-8">
-                        <!-- Aquí va el HTML de la base de datos -->
+                    <!-- Cuerpo de la carta (Inyectado por JS) -->
+                    <div id="letter-body" class="relative z-10 p-2 sm:p-6 font-serif text-lg leading-relaxed text-justify opacity-90">
+                        <!-- El texto va aquí -->
                     </div>
+
+                    <!-- DIVISOR ELEGANTE -->
+                    <div class="flex items-center justify-center my-12 opacity-50">
+                        <div class="h-px bg-current flex-grow max-w-[100px]"></div>
+                        <span class="mx-4 text-xl">✧</span>
+                        <div class="h-px bg-current flex-grow max-w-[100px]"></div>
+                    </div>
+
+                    <!-- SECCIÓN DEL SIMULADOR MATEMÁTICO -->
+                    <div class="text-center mt-12 mb-6">
+                        <h3 class="font-serif text-2xl font-semibold tracking-wide mb-2" style="color: var(--text-accent)">El Latido</h3>
+                        <p class="text-sm font-sans font-light opacity-75 mb-6 px-4 italic">
+                            Esta figura fue construida de manera matemática con el pulso de senos y cosenos, trazando una forma especial.
+                        </p>
+                        
+                        <div class="relative inline-block p-2 rounded-xl glass-box w-full max-w-md mx-auto">
+                            <!-- Lienzo de dibujo -->
+                            <canvas id="math-canvas" width="400" height="400" class="rounded-lg mb-4 cursor-crosshair"></canvas>
+                            
+                            <!-- Controles -->
+                            <div class="flex items-center gap-4 px-4 pb-2">
+                                <button id="play-sim" class="p-2 rounded-full border border-current hover:bg-current hover:text-black transition-colors" title="Animar Rastro">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                                </button>
+                                <input type="range" id="param-a" min="0" max="20" step="0.1" value="0" class="flex-grow">
+                                <span id="val-a" class="text-sm font-mono w-8 text-right">0.0</span>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
             
-            <div class="text-center mt-8">
-                <button onclick="resetApp()" class="text-stone-500 hover:text-amber-300 uppercase tracking-widest text-xs transition-colors border-b border-transparent hover:border-amber-300 pb-1">
-                    Volver al inicio
+            <!-- Botón Volver -->
+            <div class="text-center mt-12 mb-8">
+                <button onclick="resetApp()" class="text-xs tracking-[0.2em] uppercase opacity-50 hover:opacity-100 transition-opacity pb-1 border-b border-transparent hover:border-current">
+                    Cerrar Archivo
                 </button>
             </div>
         </div>
@@ -305,93 +367,146 @@
     </main>
 
     <script>
-        
-        // El contenido de la carta de Kei, diseñado exquisitamente con HTML
+        // TEXTO DE LA CARTA
         const keiLetterContent = `
             <div class="text-center mb-10">
-                <h2 class="font-title text-4xl text-[#2c241b] font-bold">Querida Kei,</h2>
-                <div class="w-16 h-[1px] bg-amber-700/30 mx-auto mt-6"></div>
+                <h2 class="font-serif text-4xl font-bold tracking-wide">Querida Kei:</h2>
             </div>
             
-            <p class="drop-cap">Siempre es difícil expresar en palabras lo que sientes al mirar el Sol, esa luz tan cegadora que te impide contemplar el cielo directamente. Es el mismo sentimiento que experimento ahora al intentar describir con palabras lo que significas para mí.</p>
+            <p><span class="drop-cap">S</span>iempre es difícil expresar en palabras lo que sientes al mirar el Sol, esa luz tan cegadora que te impide contemplar el cielo directamente. Es el mismo sentimiento que experimento ahora al intentar describir con palabras lo que significas para mí.</p>
             
-            <p>Nos conocimos de manera casual, sin esperar nada en realidad. ¿Y cómo hacerlo cuando éramos parte de un grupo con un centenar de miembros? Cruzar palabra en alguna ocasión ya era suficiente casualidad, más aún cuando yo era un miembro fantasma que aparecía esporádicamente para dar señales de vida.</p>
+            <p class="mt-4">Nos conocimos de manera casual, sin esperar nada en realidad. ¿Y cómo hacerlo cuando éramos parte de un grupo con un centenar de miembros? Cruzar palabra en alguna ocasión ya era suficiente casualidad, más aún cuando yo era un miembro fantasma que aparecía esporádicamente para dar señales de vida.</p>
 
-            <p>No creía en las casualidades, pero, si existen, agradezco infinitamente que la vida me haya llevado hasta ti. Tal vez no sientas el mismo cariño, o tal vez sí; es información ajena a mí. Pero sí deseo manifestarte lo importante que sigues siendo en mi presente.</p>
+            <p class="mt-4">No creía en las casualidades, pero, si existen, agradezco infinitamente que la vida me haya llevado hasta ti. Tal vez no sientas el mismo cariño, o tal vez sí; es información ajena a mí. Pero sí deseo manifestarte lo importante que sigues siendo en mi presente.</p>
             
-            <p>La vida ha sido difícil para mí durante estos meses, en los que el hilo que sostiene mis pensamientos se vuelve cada vez más fino, y me encontré buscando dopamina en relaciones efímeras o refugiándome en la poesía, intentando expresar al menos una gota de todo lo que pasaba por mi cabeza.</p>
+            <p class="mt-4">La vida ha sido difícil para mí durante estos meses, en los que el hilo que sostiene mis pensamientos se vuelve cada vez más fino, y me encontré buscando dopamina en relaciones efímeras o refugiándome en la poesía, intentando expresar al menos una gota de todo lo que pasaba por mi cabeza.</p>
             
-            <div class="pull-quote font-title">
+            <div class="text-center italic text-xl my-8 px-6 opacity-90" style="color: var(--text-accent)">
                 "Pero cuando todo eso parecía tormentoso, saber de ti a través de un repost o una story, con la perseverancia y el brillo de siempre, hacía que una sonrisa se formara en mi rostro. Porque así de especial eras para mí, y así de especial sigues siendo."
             </div>
 
-            <p>El contacto contigo actualmente es breve, probablemente con la misma brevedad con la que mantengo contacto con la mayoría de las personas en mi día a día; por eso, cada vez que ocurre, lo veo como algo especial y lo recibo con mucho cariño. <strong class="font-medium text-[#8b6508]">Eres una luz en la vida de las personas que te rodean</strong>; espero que lo sepas y que nunca dudes de ello, sin importar lo que suceda en tu vida.</p>
+            <p class="mt-4">El contacto contigo actualmente es breve, probablemente con la misma brevedad con la que mantengo contacto con la mayoría de las personas en mi día a día; por eso, cada vez que ocurre, lo veo como algo especial y lo recibo con mucho cariño. Eres una luz en la vida de las personas que te rodean; espero que lo sepas y que nunca dudes de ello, sin importar lo que suceda en tu vida.</p>
             
-            <p>Tienes una personalidad y una belleza, tanto física como mental, que atraen magnéticamente a todos a tu alrededor. Y aunque no pueda estar presente siempre, cada vez que acudas a mí, siempre estaré para ti.</p>
+            <p class="mt-4">Tienes una personalidad y una belleza, tanto física como mental, que atraen magnéticamente a todos a tu alrededor. Y aunque no pueda estar presente siempre, cada vez que acudas a mí, siempre estaré para ti.</p>
 
-            <p>Te amo y te adoro con todo mi corazón. Sigues siendo una parte importante de mi vida; en una cotidianidad en la que el cansancio permea mi ser por completo y socializar se vuelve cada vez más difícil, verte feliz siempre es un suspiro de alivio para mi corazón.</p>
+            <p class="mt-4">Te amo y te adoro con todo mi corazón. Sigues siendo una parte importante de mi vida; en una cotidianidad en la que el cansancio permea mi ser por completo y socializar se vuelve cada vez más difícil, verte feliz siempre es un suspiro de alivio para mi corazón.</p>
             
-            <p>Por eso, y por mucho más, deseo seguir viéndote crecer, mejorar, sanar y avanzar, ya sea de cerca o a la distancia.</p>
+            <p class="mt-4 mb-10">Por eso, y por mucho más, deseo seguir viéndote crecer, mejorar, sanar y avanzar, ya sea de cerca o a la distancia.</p>
 
-            <div class="mt-16 text-center">
-                <p class="font-title text-xl text-[#5a4634] font-bold mb-8">Feliz cumpleaños adelantado, patito. ♡</p>
-                <div class="flex justify-end pr-8">
-                    <div class="text-center">
-                        <p class="text-sm text-stone-500 mb-2 italic">— Con infinito cariño.</p>
-                        <p class="font-signature text-5xl text-[#2c241b] transform -rotate-2">Andy</p>
-                    </div>
-                </div>
+            <div class="mt-16 text-right">
+                <p class="font-serif text-2xl font-bold mb-6" style="color: var(--text-accent)">Feliz cumpleaños adelantado, patito. ♡</p>
+                <p class="text-sm opacity-70 mb-2 italic">— Con infinito cariño.</p>
+                <p class="font-script text-6xl transform -rotate-3 pr-4" style="color: var(--text-accent)">Andy</p>
             </div>
         `;
 
+        // DB
         const db = {
-            "143": {
-                sealInitial: "K",
-                theme: "sun", // Define colores de partículas
-                html: keiLetterContent
-            },
-            "patito": {
-                sealInitial: "K",
-                theme: "sun",
-                html: keiLetterContent
-            }
+            "kei": { seal: "K", html: keiLetterContent },
+            "143": { seal: "K", html: keiLetterContent }
         };
 
-        // Variables de estado
-        let currentLetter = null;
-        let particlesInterval = null;
-
-        function createParticles(theme) {
+        // PARTICULAS
+        function createParticles() {
             const container = document.getElementById('particles-container');
-            container.innerHTML = ''; // Limpiar anteriores
-            
-            // Colores dependiendo del tema (Para Kei es luz cálida/dorada)
-            const colors = theme === 'sun' ? ['#ffedd5', '#fef08a', '#d4af37'] : ['#ffffff'];
-
-            particlesInterval = setInterval(() => {
+            container.innerHTML = ''; 
+            for(let i=0; i<30; i++) {
                 const particle = document.createElement('div');
                 particle.className = 'particle';
-                
-                // Aleatoriedad
                 const size = Math.random() * 4 + 2;
-                const left = Math.random() * 100;
-                const duration = Math.random() * 6 + 6;
-                const color = colors[Math.floor(Math.random() * colors.length)];
-
                 particle.style.width = `${size}px`;
                 particle.style.height = `${size}px`;
-                particle.style.left = `${left}%`;
-                particle.style.animationDuration = `${duration}s`;
-                particle.style.backgroundColor = color;
-                particle.style.color = color; // Para el box-shadow
-
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.animationDuration = `${Math.random() * 8 + 6}s`;
+                particle.style.animationDelay = `${Math.random() * 5}s`;
                 container.appendChild(particle);
+            }
+        }
+        createParticles();
 
-                // Limpiar del DOM
-                setTimeout(() => {
-                    particle.remove();
-                }, duration * 1000);
-            }, 300);
+        // TEMA OSCURO/CLARO
+        let isDark = true;
+        function toggleTheme() {
+            isDark = !isDark;
+            document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+            const icon = document.getElementById('theme-icon');
+            if (isDark) {
+                icon.innerHTML = `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>`;
+            } else {
+                icon.innerHTML = `<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>`;
+            }
+            // Redibujar gráfico si está visible para actualizar colores
+            if(document.getElementById('letter-view').classList.contains('fade-in')){
+                drawEquation(parseFloat(document.getElementById('param-a').value));
+            }
+        }
+
+        // MUSICA AMBIENTAL GENERATIVA
+        let audioStarted = false;
+        let isMuted = false;
+        let synth, reverb, loop;
+
+        async function initAudio() {
+            if (audioStarted) return;
+            await Tone.start(); // Requiere interacción del usuario
+            
+            reverb = new Tone.Reverb({ decay: 8, wet: 0.6 }).toDestination();
+            
+            // Sintetizador suave tipo campana/caja de música
+            synth = new Tone.PolySynth(Tone.Synth, {
+                oscillator: { type: "sine" },
+                envelope: { attack: 0.5, decay: 2, sustain: 0.2, release: 4 }
+            }).connect(reverb);
+            
+            // Notas etéreas y cálidas
+            const chords = [
+                ['C4', 'E4', 'G4', 'B4'], 
+                ['A3', 'C4', 'E4', 'G4'], 
+                ['F3', 'A3', 'C4', 'E4'], 
+                ['G3', 'B3', 'D4', 'F4']
+            ];
+            
+            let chordIndex = 0;
+            
+            // Un loop lento que toca arpegios
+            Tone.Transport.scheduleRepeat((time) => {
+                const chord = chords[chordIndex % chords.length];
+                // Arpegiar el acorde
+                chord.forEach((note, i) => {
+                    synth.triggerAttackRelease(note, "2n", time + i * 0.4, 0.15 - (i*0.02));
+                });
+                chordIndex++;
+            }, "2m"); // Cada 2 medidas
+
+            Tone.Transport.bpm.value = 60;
+            Tone.Transport.start();
+            audioStarted = true;
+            document.getElementById('music-indicator').classList.remove('hidden');
+        }
+
+        function stopAudio() {
+            if(audioStarted) {
+                Tone.Transport.stop();
+                document.getElementById('music-indicator').classList.add('hidden');
+                audioStarted = false;
+            }
+        }
+
+        function toggleAudio() {
+            if (!audioStarted) return;
+            isMuted = !isMuted;
+            Tone.Destination.mute = isMuted;
+            const bars = document.getElementById('music-bars');
+            const text = document.getElementById('music-text');
+            if (isMuted) {
+                bars.classList.add('opacity-30');
+                bars.querySelectorAll('div').forEach(d => d.classList.remove('animate-pulse'));
+                text.innerText = "Silenciado";
+            } else {
+                bars.classList.remove('opacity-30');
+                bars.querySelectorAll('div').forEach(d => d.classList.add('animate-pulse'));
+                text.innerText = "Música Activa";
+            }
         }
 
         function checkCode() {
@@ -399,21 +514,10 @@
             const errorMsg = document.getElementById('error-msg');
             
             if (db[input]) {
-                currentLetter = db[input];
                 errorMsg.classList.add('hidden');
+                document.getElementById('wax-initial').innerText = db[input].seal;
+                document.getElementById('letter-body').innerHTML = db[input].html;
                 
-                // Preparar datos del sobre y carta
-                document.getElementById('wax-initial').innerText = currentLetter.sealInitial;
-                document.getElementById('letter-body').innerHTML = currentLetter.html;
-                
-                // Aplicar marca de agua según el tema
-                const watermark = document.getElementById('letter-watermark');
-                watermark.className = currentLetter.theme === 'sun' ? 'watermark-sun' : '';
-
-                // Activar partículas ambientales del tema
-                createParticles(currentLetter.theme);
-
-                // Transición 1: Login -> Sobre
                 const loginView = document.getElementById('login-view');
                 const envView = document.getElementById('envelope-view');
                 
@@ -423,7 +527,6 @@
                     envView.classList.remove('hidden');
                     envView.classList.add('fade-in');
                 }, 500);
-
             } else {
                 errorMsg.classList.remove('hidden');
             }
@@ -431,14 +534,13 @@
 
         function openEnvelope() {
             const envelope = document.getElementById('the-envelope');
-            
-            // Evitar doble clic
             if(envelope.classList.contains('open')) return;
             
-            // 1. Abrir sobre (CSS anima el sello, la solapa y asoma la carta)
+            // Iniciar música al interactuar
+            initAudio();
+            
             envelope.classList.add('open');
 
-            // 2. Esperar que termine la animación del sobre, luego hacer fade out a la vista completa
             setTimeout(() => {
                 const envView = document.getElementById('envelope-view');
                 const letterView = document.getElementById('letter-view');
@@ -450,13 +552,16 @@
                     envView.classList.add('hidden');
                     letterView.classList.remove('hidden');
                     letterView.classList.add('fade-in');
-                }, 500); // 500ms del fadeOut
+                    
+                    // Inicializar el gráfico con a=0
+                    drawEquation(0);
+                }, 500);
 
-            }, 1500); // 1.5s que dura la animación del sobre abriéndose
+            }, 1500);
         }
 
         function resetApp() {
-            // Reiniciar estado
+            stopAudio();
             document.getElementById('letter-view').classList.add('hidden');
             document.getElementById('letter-view').classList.remove('fade-in');
             
@@ -471,14 +576,170 @@
             loginView.classList.remove('hidden');
             
             document.getElementById('code-input').value = '';
-            clearInterval(particlesInterval);
-            document.getElementById('particles-container').innerHTML = '';
+            
+            // Reset simulador
+            const slider = document.getElementById('param-a');
+            slider.value = 0;
+            document.getElementById('val-a').innerText = "0.0";
+            cancelAnimationFrame(animFrame);
         }
 
-        // Permitir usar "Enter" en el input
         document.getElementById('code-input').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') checkCode();
         });
+
+        // ================= SIMULADOR MATEMATICO =================
+        const canvas = document.getElementById('math-canvas');
+        const ctx = canvas.getContext('2d');
+        const sliderA = document.getElementById('param-a');
+        const valA = document.getElementById('val-a');
+        const btnPlay = document.getElementById('play-sim');
+        
+        // Mapeo de coordenadas -> Canvas (400x400)
+        const rangeX = 6.5;
+        const rangeY = 6.5;
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+        const scaleX = canvas.width / rangeX;
+        const scaleY = canvas.height / rangeY;
+
+        function mapX(x) { return cx + (x * scaleX); }
+        // Invertimos Y porque en canvas Y crece hacia abajo
+        function mapY(y) { return cy - (y * scaleY); }
+
+        function drawAxes() {
+            ctx.strokeStyle = isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)";
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            // X axis
+            ctx.moveTo(0, cy); ctx.lineTo(canvas.width, cy);
+            // Y axis
+            ctx.moveTo(cx, 0); ctx.lineTo(cx, canvas.height);
+            ctx.stroke();
+            
+            // Grid sutil
+            ctx.strokeStyle = isDark ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.02)";
+            ctx.beginPath();
+            for(let i = -3; i <= 3; i+=1) {
+                ctx.moveTo(mapX(i), 0); ctx.lineTo(mapX(i), canvas.height);
+                ctx.moveTo(0, mapY(i)); ctx.lineTo(canvas.width, mapY(i));
+            }
+            ctx.stroke();
+        }
+
+        // Dibuja una única curva para un 'a' específico
+        function drawSingleCurve(a_val, isCurrent) {
+            // Ecuación: (x + sin(a*pi/10))^2 + (y + cos(a*pi/10))^2 = 1.2 + 0.7|x|y
+            // Despejada mediante fórmula general cuadrática para Y
+            const sinA = Math.sin(a_val * Math.PI / 10);
+            const cosA = Math.cos(a_val * Math.PI / 10);
+            
+            const accent = isDark ? "212, 175, 55" : "184, 145, 48";
+            
+            ctx.beginPath();
+            
+            let upperPoints = [];
+            let lowerPoints = [];
+            
+            for (let x = -3.5; x <= 3.5; x += 0.01) {
+                let A = 1;
+                let B = 2 * cosA - 0.7 * Math.abs(x);
+                let C = Math.pow(x + sinA, 2) + Math.pow(cosA, 2) - 1.2;
+                
+                let discriminant = B * B - 4 * A * C;
+                
+                if (discriminant >= 0) {
+                    let y1 = (-B + Math.sqrt(discriminant)) / (2 * A);
+                    let y2 = (-B - Math.sqrt(discriminant)) / (2 * A);
+                    
+                    upperPoints.push({x: x, y: y1});
+                    lowerPoints.unshift({x: x, y: y2}); 
+                }
+            }
+            
+            if (upperPoints.length > 0) {
+                ctx.moveTo(mapX(upperPoints[0].x), mapY(upperPoints[0].y));
+                for(let i=1; i<upperPoints.length; i++) {
+                    ctx.lineTo(mapX(upperPoints[i].x), mapY(upperPoints[i].y));
+                }
+                for(let i=0; i<lowerPoints.length; i++) {
+                    ctx.lineTo(mapX(lowerPoints[i].x), mapY(lowerPoints[i].y));
+                }
+                ctx.closePath();
+            }
+
+            if (isCurrent) {
+                ctx.strokeStyle = `rgba(${accent}, 1)`;
+                ctx.lineWidth = 2.5;
+                // Efecto Glow solo a la línea actual
+                ctx.shadowBlur = 12;
+                ctx.shadowColor = `rgba(${accent}, 0.9)`;
+            } else {
+                ctx.strokeStyle = `rgba(${accent}, 1)`; // 100% de opacidad para el rastro
+                ctx.lineWidth = 0.6; // Línea súper fina para un tramado hermoso
+                ctx.shadowBlur = 0;
+            }
+            
+            ctx.stroke();
+            ctx.shadowBlur = 0; // Reset
+        }
+
+        function drawEquation(max_a) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawAxes();
+            
+            // Dibujar rastro con los parámetros actualizados
+            for(let step_a = 0; step_a <= max_a; step_a += 0.4) {
+                drawSingleCurve(step_a, false);
+            }
+            // Dibujar curva actual remarcada
+            drawSingleCurve(max_a, true);
+        }
+
+        // Lógica interactiva del slider
+        sliderA.addEventListener('input', (e) => {
+            // Detener animación automática si arrastras el dedo/mouse
+            if (isPlaying) {
+                isPlaying = false;
+                btnPlay.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>`;
+                cancelAnimationFrame(animFrame);
+            }
+            const v = parseFloat(e.target.value);
+            valA.innerText = v.toFixed(1);
+            drawEquation(v);
+        });
+
+        // Animación automática
+        let isPlaying = false;
+        let animFrame;
+        
+        btnPlay.addEventListener('click', () => {
+            isPlaying = !isPlaying;
+            btnPlay.innerHTML = isPlaying 
+                ? `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>` // Pause
+                : `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>`; // Play
+            
+            if (isPlaying) {
+                if(parseFloat(sliderA.value) >= 20) sliderA.value = 0; // Reiniciar si llegó al final
+                animateSlider();
+            } else {
+                cancelAnimationFrame(animFrame);
+            }
+        });
+
+        function animateSlider() {
+            let current = parseFloat(sliderA.value);
+            if (current < 20) {
+                current += 0.05; // Velocidad de la animación
+                sliderA.value = current;
+                valA.innerText = current.toFixed(1);
+                drawEquation(current);
+                animFrame = requestAnimationFrame(animateSlider);
+            } else {
+                isPlaying = false;
+                btnPlay.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>`;
+            }
+        }
     </script>
 </body>
 </html>
