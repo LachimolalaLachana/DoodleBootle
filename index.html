@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Para ti | Correspondencia Especial</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Fuentes: Playfair para títulos, Lora para lectura, Great Vibes para la firma -->
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Lora:ital,wght@0,400;0,500;1,400;1,500&family=Playfair+Display:ital,wght@0,500;0,700;1,500&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-dark: #12100e;
+            --paper: #f9f5f0;
+            --ink: #2c241b;
+            --gold: #d4af37;
+            --gold-light: #f3e5ab;
+            --env-back: #b58c5c;
+            --env-flap: #c69f70;
+            --env-front: #d6b283;
+            --wax: #8b0000;
+        }
+
+        body {
+            font-family: 'Lora', serif;
+            background-color: var(--bg-dark);
+            color: var(--paper);
+            overflow-x: hidden;
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        /* Utilidades de tipografía */
+        .font-title { font-family: 'Playfair Display', serif; }
+        .font-signature { font-family: 'Great Vibes', cursive; }
+        
+        .glass-box {
+            background: radial-gradient(circle at center, rgba(44, 36, 27, 0.8) 0%, rgba(20, 16, 14, 0.95) 100%);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.8), inset 0 0 40px rgba(212,175,55,0.05);
+            position: relative;
+        }
+        .glass-box::before {
+            content: '';
+            position: absolute;
+            inset: 6px;
+            border: 1px solid rgba(212, 175, 55, 0.1);
+            pointer-events: none;
+            border-radius: inherit;
+        }
+
+        .envelope-wrapper {
+            perspective: 1200px;
+            width: 100%;
+            max-w: 400px;
+            margin: 0 auto;
+            cursor: pointer;
+            filter: drop-shadow(0 20px 30px rgba(0,0,0,0.5));
+            transition: transform 0.3s ease;
+        }
+        .envelope-wrapper:hover {
+            transform: translateY(-5px);
+        }
+        .envelope {
+            position: relative;
+            width: 100%;
+            height: 240px;
+            background: var(--env-back);
+            border-radius: 4px;
+            transform-style: preserve-3d;
+        }
+        /* Carta asomándose */
+        .env-letter {
+            position: absolute;
+            top: 10px; left: 15px; right: 15px; bottom: 10px;
+            background: var(--paper);
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            border: 1px solid rgba(0,0,0,0.1);
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 2;
+            display: flex;
+            justify-content: center;
+            padding-top: 15px;
+        }
+        .env-letter-lines {
+            width: 80%; border-top: 1px solid rgba(212,175,55,0.3);
+            height: 10px; border-bottom: 1px solid rgba(212,175,55,0.3);
+        }
+        
+        /* Solapas del sobre con Clip Path para formas perfectas */
+        .env-left {
+            position: absolute; inset: 0; background: var(--env-front);
+            clip-path: polygon(0 0, 50% 50%, 0 100%); z-index: 3;
+        }
+        .env-right {
+            position: absolute; inset: 0; background: var(--env-front);
+            clip-path: polygon(100% 0, 50% 50%, 100% 100%); z-index: 3;
+        }
+        .env-bottom {
+            position: absolute; inset: 0; background: #e0be91;
+            clip-path: polygon(0 100%, 50% 50%, 100% 100%); z-index: 4;
+        }
+        .env-top {
+            position: absolute; inset: 0; background: var(--env-flap);
+            clip-path: polygon(0 0, 100% 0, 50% 50%); z-index: 5;
+            transform-origin: top;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        /* Sello de Cera */
+        .wax-seal {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50px; height: 50px;
+            background: radial-gradient(circle, #a00000, #500000);
+            border-radius: 50%; z-index: 6;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5), inset 0 0 10px rgba(0,0,0,0.5);
+            border: 2px solid #300000;
+            display: flex; align-items: center; justify-content: center;
+            color: #d4af37; font-family: 'Great Vibes', cursive; font-size: 24px;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+
+        /* Clases activas para la animación del sobre */
+        .envelope.open .wax-seal { opacity: 0; transform: translate(-50%, -50%) scale(1.5); pointer-events: none; }
+        .envelope.open .env-top { transform: rotateX(180deg); z-index: 1; }
+        .envelope.open .env-letter { transform: translateY(-100px); }
+
+        .letter-paper {
+            background-color: var(--paper);
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E");
+            color: var(--ink);
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,0,0,0.05);
+            position: relative;
+            /* Marco decorativo elegante */
+            border: 8px solid transparent;
+            border-image: linear-gradient(45deg, #d4af37, #f3e5ab, #d4af37) 1;
+        }
+
+        .letter-inner-border {
+            border: 1px solid rgba(212, 175, 55, 0.4);
+            padding: 2rem;
+            position: relative;
+            height: 100%;
+        }
+
+        /* Adornos en las esquinas */
+        .corner-ornament {
+            position: absolute; width: 30px; height: 30px;
+            border: 2px solid var(--gold); pointer-events: none;
+        }
+        .corner-tl { top: 5px; left: 5px; border-right: none; border-bottom: none; }
+        .corner-tr { top: 5px; right: 5px; border-left: none; border-bottom: none; }
+        .corner-bl { bottom: 5px; left: 5px; border-right: none; border-top: none; }
+        .corner-br { bottom: 5px; right: 5px; border-left: none; border-top: none; }
+
+        /* Estilos del texto de la carta */
+        .drop-cap::first-letter {
+            font-family: 'Playfair Display', serif;
+            font-size: 4.5rem;
+            float: left;
+            line-height: 0.8;
+            padding-right: 0.5rem;
+            padding-top: 0.2rem;
+            color: var(--gold);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .letter-content p {
+            margin-bottom: 1.5rem;
+            text-align: justify;
+            line-height: 1.8;
+            font-size: 1.05rem;
+        }
+
+        /* Cita poética central */
+        .pull-quote {
+            text-align: center;
+            font-style: italic;
+            font-size: 1.15rem;
+            color: #5a4634;
+            margin: 2.5rem 1rem;
+            padding: 1.5rem;
+            position: relative;
+        }
+        .pull-quote::before, .pull-quote::after {
+            content: '✧';
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            color: var(--gold);
+            font-size: 1.5rem;
+        }
+        .pull-quote::before { top: -15px; }
+        .pull-quote::after { bottom: -15px; }
+
+        /* Marca de agua del Sol para esta carta */
+        .watermark-sun {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px; height: 300px;
+            background: radial-gradient(circle, rgba(212,175,55,0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Partículas ambientales (Luces cálidas) */
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+            opacity: 0;
+            animation: floatUp ease-in infinite;
+            box-shadow: 0 0 10px currentColor;
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(100vh) scale(0); opacity: 0; }
+            50% { opacity: 0.8; }
+            100% { transform: translateY(-10vh) scale(1.5); opacity: 0; }
+        }
+
+        /* Transiciones suaves */
+        .fade-in { animation: fadeIn 1s ease-out forwards; }
+        .fade-out { animation: fadeOut 0.5s ease-in forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.95); } }
+    </style>
+</head>
+<body class="flex items-center justify-center relative">
+
+    <div id="particles-container" class="fixed inset-0 z-0 overflow-hidden pointer-events-none"></div>
+
+    <!-- MAIN APP WRAPPER -->
+    <main class="w-full max-w-4xl px-4 py-8 relative z-10 min-h-screen flex items-center justify-center">
+        
+        <!-- ================= VISTA 1: LOGIN ================= -->
+        <div id="login-view" class="glass-box w-full max-w-md p-10 rounded-2xl text-center fade-in">
+            <div class="w-16 h-16 mx-auto mb-6 border border-amber-500/30 rounded-full flex items-center justify-center bg-amber-500/10">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-amber-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h16v3"/><path d="M4 11v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6"/><path d="M12 11v10"/><path d="M4 7l8 4 8-4"/></svg>
+            </div>
+            
+            <h1 class="font-title text-3xl mb-3 text-amber-50 tracking-wider">Correspondencia Especial</h1>
+            <p class="text-stone-400 font-light mb-8 text-sm">Introduce tu nombre o clave asignada para recibir tu carta.</p>
+            
+            <div class="space-y-5">
+                <input type="text" id="code-input" placeholder="Tu nombre..." 
+                    class="w-full bg-black/40 border-b-2 border-stone-600 px-4 py-3 text-center text-amber-100 placeholder-stone-600 focus:outline-none focus:border-amber-400 transition-colors text-lg tracking-widest font-title">
+                
+                <button onclick="checkCode()" 
+                    class="w-full py-3 mt-4 border border-amber-500/50 text-amber-200 hover:bg-amber-500/10 hover:border-amber-400 transition-all uppercase tracking-widest text-xs font-semibold">
+                    Buscar Carta
+                </button>
+            </div>
+            <p id="error-msg" class="text-sm text-red-400 mt-4 hidden">No hay cartas para ese nombre.</p>
+        </div>
+
+        <!-- ================= VISTA 2: EL SOBRE 3D ================= -->
+        <div id="envelope-view" class="hidden w-full max-w-md mx-auto text-center">
+            <h2 class="font-title text-2xl text-amber-100 mb-8 tracking-widest font-light uppercase">Tienes correo</h2>
+            
+            <div class="envelope-wrapper" onclick="openEnvelope()">
+                <div class="envelope" id="the-envelope">
+                    <div class="env-letter"><div class="env-letter-lines"></div></div>
+                    <div class="env-left"></div>
+                    <div class="env-right"></div>
+                    <div class="env-bottom"></div>
+                    <div class="env-top"></div>
+                    <div class="wax-seal" id="wax-initial">K</div>
+                </div>
+            </div>
+            
+            <p class="text-stone-400 text-sm mt-12 font-light italic animate-pulse">Presiona el sobre para abrirlo</p>
+        </div>
+
+        <!-- ================= VISTA 3: LA CARTA ================= -->
+        <div id="letter-view" class="hidden w-full max-w-2xl mx-auto">
+            <div class="letter-paper rounded-sm">
+                <!-- Marco interior y esquinas -->
+                <div class="letter-inner-border">
+                    <div class="corner-ornament corner-tl"></div>
+                    <div class="corner-ornament corner-tr"></div>
+                    <div class="corner-ornament corner-bl"></div>
+                    <div class="corner-ornament corner-br"></div>
+                    
+                    <div id="letter-watermark"></div>
+
+                    <!-- Contenido inyectado por JS -->
+                    <div id="letter-body" class="letter-content relative z-10 p-4 sm:p-8">
+                        <!-- Aquí va el HTML de la base de datos -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-8">
+                <button onclick="resetApp()" class="text-stone-500 hover:text-amber-300 uppercase tracking-widest text-xs transition-colors border-b border-transparent hover:border-amber-300 pb-1">
+                    Volver al inicio
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        
+        // El contenido de la carta de Kei, diseñado exquisitamente con HTML
+        const keiLetterContent = `
+            <div class="text-center mb-10">
+                <h2 class="font-title text-4xl text-[#2c241b] font-bold">Querida Kei,</h2>
+                <div class="w-16 h-[1px] bg-amber-700/30 mx-auto mt-6"></div>
+            </div>
+            
+            <p class="drop-cap">Siempre es difícil expresar en palabras lo que sientes al mirar el Sol, esa luz tan cegadora que te impide contemplar el cielo directamente. Es el mismo sentimiento que experimento ahora al intentar describir con palabras lo que significas para mí.</p>
+            
+            <p>Nos conocimos de manera casual, sin esperar nada en realidad. ¿Y cómo hacerlo cuando éramos parte de un grupo con un centenar de miembros? Cruzar palabra en alguna ocasión ya era suficiente casualidad, más aún cuando yo era un miembro fantasma que aparecía esporádicamente para dar señales de vida.</p>
+
+            <p>No creía en las casualidades, pero, si existen, agradezco infinitamente que la vida me haya llevado hasta ti. Tal vez no sientas el mismo cariño, o tal vez sí; es información ajena a mí. Pero sí deseo manifestarte lo importante que sigues siendo en mi presente.</p>
+            
+            <p>La vida ha sido difícil para mí durante estos meses, en los que el hilo que sostiene mis pensamientos se vuelve cada vez más fino, y me encontré buscando dopamina en relaciones efímeras o refugiándome en la poesía, intentando expresar al menos una gota de todo lo que pasaba por mi cabeza.</p>
+            
+            <div class="pull-quote font-title">
+                "Pero cuando todo eso parecía tormentoso, saber de ti a través de un repost o una story, con la perseverancia y el brillo de siempre, hacía que una sonrisa se formara en mi rostro. Porque así de especial eras para mí, y así de especial sigues siendo."
+            </div>
+
+            <p>El contacto contigo actualmente es breve, probablemente con la misma brevedad con la que mantengo contacto con la mayoría de las personas en mi día a día; por eso, cada vez que ocurre, lo veo como algo especial y lo recibo con mucho cariño. <strong class="font-medium text-[#8b6508]">Eres una luz en la vida de las personas que te rodean</strong>; espero que lo sepas y que nunca dudes de ello, sin importar lo que suceda en tu vida.</p>
+            
+            <p>Tienes una personalidad y una belleza, tanto física como mental, que atraen magnéticamente a todos a tu alrededor. Y aunque no pueda estar presente siempre, cada vez que acudas a mí, siempre estaré para ti.</p>
+
+            <p>Te amo y te adoro con todo mi corazón. Sigues siendo una parte importante de mi vida; en una cotidianidad en la que el cansancio permea mi ser por completo y socializar se vuelve cada vez más difícil, verte feliz siempre es un suspiro de alivio para mi corazón.</p>
+            
+            <p>Por eso, y por mucho más, deseo seguir viéndote crecer, mejorar, sanar y avanzar, ya sea de cerca o a la distancia.</p>
+
+            <div class="mt-16 text-center">
+                <p class="font-title text-xl text-[#5a4634] font-bold mb-8">Feliz cumpleaños adelantado, patito. ♡</p>
+                <div class="flex justify-end pr-8">
+                    <div class="text-center">
+                        <p class="text-sm text-stone-500 mb-2 italic">— Con infinito cariño.</p>
+                        <p class="font-signature text-5xl text-[#2c241b] transform -rotate-2">Andy</p>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        const db = {
+            "143": {
+                sealInitial: "K",
+                theme: "sun", // Define colores de partículas
+                html: keiLetterContent
+            },
+            "patito": {
+                sealInitial: "K",
+                theme: "sun",
+                html: keiLetterContent
+            }
+        };
+
+        // Variables de estado
+        let currentLetter = null;
+        let particlesInterval = null;
+
+        function createParticles(theme) {
+            const container = document.getElementById('particles-container');
+            container.innerHTML = ''; // Limpiar anteriores
+            
+            // Colores dependiendo del tema (Para Kei es luz cálida/dorada)
+            const colors = theme === 'sun' ? ['#ffedd5', '#fef08a', '#d4af37'] : ['#ffffff'];
+
+            particlesInterval = setInterval(() => {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                // Aleatoriedad
+                const size = Math.random() * 4 + 2;
+                const left = Math.random() * 100;
+                const duration = Math.random() * 6 + 6;
+                const color = colors[Math.floor(Math.random() * colors.length)];
+
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.left = `${left}%`;
+                particle.style.animationDuration = `${duration}s`;
+                particle.style.backgroundColor = color;
+                particle.style.color = color; // Para el box-shadow
+
+                container.appendChild(particle);
+
+                // Limpiar del DOM
+                setTimeout(() => {
+                    particle.remove();
+                }, duration * 1000);
+            }, 300);
+        }
+
+        function checkCode() {
+            const input = document.getElementById('code-input').value.trim().toLowerCase();
+            const errorMsg = document.getElementById('error-msg');
+            
+            if (db[input]) {
+                currentLetter = db[input];
+                errorMsg.classList.add('hidden');
+                
+                // Preparar datos del sobre y carta
+                document.getElementById('wax-initial').innerText = currentLetter.sealInitial;
+                document.getElementById('letter-body').innerHTML = currentLetter.html;
+                
+                // Aplicar marca de agua según el tema
+                const watermark = document.getElementById('letter-watermark');
+                watermark.className = currentLetter.theme === 'sun' ? 'watermark-sun' : '';
+
+                // Activar partículas ambientales del tema
+                createParticles(currentLetter.theme);
+
+                // Transición 1: Login -> Sobre
+                const loginView = document.getElementById('login-view');
+                const envView = document.getElementById('envelope-view');
+                
+                loginView.classList.replace('fade-in', 'fade-out');
+                setTimeout(() => {
+                    loginView.classList.add('hidden');
+                    envView.classList.remove('hidden');
+                    envView.classList.add('fade-in');
+                }, 500);
+
+            } else {
+                errorMsg.classList.remove('hidden');
+            }
+        }
+
+        function openEnvelope() {
+            const envelope = document.getElementById('the-envelope');
+            
+            // Evitar doble clic
+            if(envelope.classList.contains('open')) return;
+            
+            // 1. Abrir sobre (CSS anima el sello, la solapa y asoma la carta)
+            envelope.classList.add('open');
+
+            // 2. Esperar que termine la animación del sobre, luego hacer fade out a la vista completa
+            setTimeout(() => {
+                const envView = document.getElementById('envelope-view');
+                const letterView = document.getElementById('letter-view');
+                
+                envView.classList.remove('fade-in');
+                envView.classList.add('fade-out');
+                
+                setTimeout(() => {
+                    envView.classList.add('hidden');
+                    letterView.classList.remove('hidden');
+                    letterView.classList.add('fade-in');
+                }, 500); // 500ms del fadeOut
+
+            }, 1500); // 1.5s que dura la animación del sobre abriéndose
+        }
+
+        function resetApp() {
+            // Reiniciar estado
+            document.getElementById('letter-view').classList.add('hidden');
+            document.getElementById('letter-view').classList.remove('fade-in');
+            
+            const envelope = document.getElementById('the-envelope');
+            envelope.classList.remove('open');
+            
+            document.getElementById('envelope-view').classList.remove('fade-out');
+            
+            const loginView = document.getElementById('login-view');
+            loginView.classList.remove('fade-out');
+            loginView.classList.add('fade-in');
+            loginView.classList.remove('hidden');
+            
+            document.getElementById('code-input').value = '';
+            clearInterval(particlesInterval);
+            document.getElementById('particles-container').innerHTML = '';
+        }
+
+        // Permitir usar "Enter" en el input
+        document.getElementById('code-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') checkCode();
+        });
+    </script>
+</body>
+</html>
